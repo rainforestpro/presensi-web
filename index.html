@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --card-bg: #ffffff;
+      --primary: #4a90e2;
+      --radius: 12px;
+      --spacing: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: url('https://i.pinimg.com/736x/c5/5e/62/c55e623547c9a525eb28b11696bcf393.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--spacing);
+      height: 100vh;
+    }
+
+    .profile-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      max-width: 1000px;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 80vh;
+    }
+
+    @media (min-width: 768px) {
+      .profile-card {
+        flex-direction: row;
+      }
+    }
+
+    .profile-sidebar {
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      padding: var(--spacing);
+      flex: 1 1 250px;
+      text-align: center;
+      min-height: 80vh;
+      background-image: url('https://i.pinimg.com/736x/9e/67/ae/9e67aec62b7aca379b85b92989f926b5.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .profile-sidebar::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.005); /* lapisan putih semi transparan */
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      z-index: 0;
+    }
+
+    .profile-sidebar > * {
+      position: relative;
+      z-index: 1;
+    }
+
+
+    .profile-sidebar h1 {
+      font-size: 1.75rem;
+      margin-bottom: 4px;
+    }
+
+    .profile-sidebar p {
+      font-size: 1rem;
+      font-weight: 300;
+    }
+
+    .profile-main {
+      padding: var(--spacing);
+      flex: 2 1 0;
+      min-height: 80vh;
+    }
+
+    .container2 {
+      width: 100%;
+      max-width: 400px;
+      height: 400px;
+      margin: 0 auto;
+      position: relative;
+      perspective: 1200px;
+    }
+
+    .flip-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.8s ease;
+      transform-style: preserve-3d;
+    }
+
+    .flip-inner.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      border-radius: 15px;
+      padding: 30px;
+
+      background: transparent; /* <-- Hapus warna background */
+      backdrop-filter: none;   /* <-- Hapus efek blur glossy */
+      backface-visibility: hidden;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+
+    #optionCard {
+      transform: rotateY(0deg);
+    }
+
+    #loginCard {
+      transform: rotateY(180deg);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #357ABD;
+    }
+
+    .input-group {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.7); /* ← abu keputihan semi transparan */
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(0, 0, 0, 0.1); /* opsional: garis batas samar */
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* opsional: efek bayangan ringan */
+    }
+
+    .input-group input {
+      border: none;
+      outline: none;
+      flex: 1;
+      background: transparent; /* agar input menyatu dengan .input-group */
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .btn-back {
+      color: var(--primary);
+      cursor: pointer;
+      margin-top: 12px;
+      text-decoration: underline;
+    }
+
+
+    .branding-container {
+      text-align: center;
+      padding: 10px;
+      color: white;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
+      font-family: 'Ubuntu', sans-serif;
+    }
+
+    .brand-line {
+      font-size: 1.2rem;
+      font-weight: 500;
+      line-height: 1.3;
+      opacity: 0.85;
+    }
+
+    #care-word {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      display: inline-block;
+      margin-top: 10px;
+      margin-bottom: 0;
+    }
+
+    #care-word span {
+      display: inline;
+      transition: color 0.4s, text-shadow 0.4s;
+      font-weight: bold;
+    }
+
+    #care-word .highlight {
+      color: #00f0ff;
+      text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+    }
+
+    #value-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 7px;
+      min-height: 60px;
+    }
+
+    #value-desc {
+      font-size: 0.95rem;
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.8s;
+      min-height: 60px;
+    }
+
+    .fade-out {
+      opacity: 0 !important;
+      transition: opacity 0.8s;
+    }
+
+    .fade-in {
+      opacity: 1 !important;
+    }
+
+    @media (max-width: 767px) {
+      .profile-card {
+        flex-direction: column;
+        min-height: 60vh;
+        height: auto;
+      }
+
+      .profile-sidebar {
+        min-height: 15vh;
+        height: 15vh;
+        padding: 12px;
+      }
+
+      .profile-main {
+        min-height: 50vh;
+        height: 50vh;
+        padding: 12px;
+      }
+
+      .container2 {
+        height: 100%;
+      }
+    }
+
+    .btn-group-modern {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .btn-modern {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      background-color: #f5f7fa;
+      border: 1px solid #dce3ed;
+      color: #2f4f6e;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .btn-modern:hover {
+      background-color: #eaf1fb;
+      border-color: #b7d0f1;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+
+    .btn-icon {
+      font-size: 1.2rem;
+      width: 24px;
+      text-align: center;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="profile-card">
+      <aside class="profile-sidebar">
+        <div class="branding-container">
+          <div class="brand-line">Beepetmart</div>
+          <div class="brand-line">We Live by</div>
+          <div class="brand-line" id="care-word">
+            <span id="C">C</span><span id="A">A</span><span id="R">R</span><span id="E">E</span>
+          </div>
+          <div id="value-title"></div>
+          <div id="value-desc"></div>
+        </div>
+      </aside>
+      <main class="profile-main">
+        <div class="container2">
+          <div class="flip-inner" id="flipContainer">
+            <div class="card" id="optionCard">
+              <h2>Pilih Metode Login</h2>
+              <div class="btn-group-modern">
+                <button class="btn-modern" onclick="flipCard('presensi')">
+                  <span class="btn-icon">🕒</span>
+                  <span>Presensi</span>
+                </button>
+                <button class="btn-modern" onclick="flipCard('riwayat')">
+                  <span class="btn-icon">📅</span>
+                  <span>Jadwal & Riwayat</span>
+                </button>
+                <button class="btn-modern" onclick="flipCard('approval')">
+                  <span class="btn-icon">📝</span>
+                  <span>Approval</span>
+                </button>
+              </div>
+            </div>
+            <div class="card" id="loginCard">
+              <h2 id="loginTitle">Login</h2>
+              <div class="input-group">
+                <i>📧</i>
+                <input type="email" id="email" placeholder="Email" required />
+              </div>
+              <div class="input-group">
+                <i>🔒</i>
+                <input type="password" id="password" placeholder="Password" required />
+              </div>
+              <button class="btn" id="loginBtn" onclick="login()">Masuk</button>
+              <div class="btn-back" onclick="flipBack()">Kembali</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    let loginType = '';
+
+    const values = [
+      {
+        title: "Continuous Improvement",
+        desc: "We strive for excellence by constantly improving our processes and ourselves."
+      },
+      {
+        title: "Accountable",
+        desc: "We take ownership of our actions and deliver what we promise with integrity."
+      },
+      {
+        title: "Respect",
+        desc: "We treat everyone with dignity, fairness, and compassion."
+      },
+      {
+        title: "Effective & Efficient",
+        desc: "We deliver high-quality results while optimizing resources and time."
+      }
+    ];
+
+    const titleEl = document.getElementById("value-title");
+    const descEl = document.getElementById("value-desc");
+    let index = 0;
+
+    function typeWriter(text, callback) {
+      let i = 0;
+      titleEl.textContent = "";
+      function type() {
+        if (i < text.length) {
+          titleEl.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, 50);
+        } else {
+          callback();
+        }
+      }
+      type();
+    }
+
+    function highlightCARE(titleText) {
+      const firstLetter = titleText.charAt(0).toUpperCase();
+      const validLetters = ["C", "A", "R", "E"];
+      validLetters.forEach(letter => {
+        const el = document.getElementById(letter);
+        if (el) el.classList.remove("highlight");
+      });
+      if (validLetters.includes(firstLetter)) {
+        const el = document.getElementById(firstLetter);
+        if (el) el.classList.add("highlight");
+      }
+    }
+
+    function showValue() {
+      titleEl.classList.remove("fade-out");
+      descEl.classList.remove("fade-out", "fade-in");
+      descEl.style.opacity = 0;
+
+      const { title, desc } = values[index];
+      highlightCARE(title);
+
+      typeWriter(title, () => {
+        descEl.textContent = desc;
+        descEl.classList.add("fade-in");
+
+        setTimeout(() => {
+          titleEl.classList.add("fade-out");
+          descEl.classList.remove("fade-in");
+          descEl.classList.add("fade-out");
+
+          setTimeout(() => {
+            index = (index + 1) % values.length;
+            showValue();
+          }, 800);
+        }, 3000);
+      });
+    }
+    //------------------------------------ Pembatas untuk Core Value ------------------------------------
+
+    function flipCard(type) {
+      loginType = type;
+      document.getElementById("flipContainer").classList.add("flipped");
+      document.getElementById("loginTitle").innerText =
+        type === 'presensi' ? 'Login Presensi' :
+        type === 'riwayat' ? 'Login Riwayat' :
+        type === 'approval' ? 'Login Approval' : 'Login';
+      populateLoginFields();
+    }
+
+    function flipBack() {
+      document.getElementById("flipContainer").classList.remove("flipped");
+    }
+
+    function login() {
+      if (loginType === 'presensi') {
+        presensiLogin();
+      } else if (loginType === 'riwayat') {
+        riwayat();
+      } else if (loginType === 'approval') {
+        approval();
+      } else {
+        showCustomModal("Error", "Silakan pilih metode login terlebih dahulu.", "error");
+      }
+    }
+
+    // <--- Fungsi Login untuk Tipe Presensi --->
+    // Bagian JS yang dimodifikasi: hanya fungsi `presensiLogin()`
+    function presensiLogin() {
+      const emailEl = document.getElementById('email');
+      const passEl  = document.getElementById('password');
+      const objInput = {
+        input1: emailEl.value,
+        input2: passEl.value
+      };
+
+      if (!objInput.input1 || !objInput.input2) {
+        showCustomModal("Peringatan", "Isi semua kolom!", "warning");
+        return;
+      }
+
+      showLoadingScreen();
+      localStorage.setItem('savedEmail', objInput.input1);
+      localStorage.setItem('savedPassword', objInput.input2);
+
+      google.script.run
+        .withSuccessHandler(function(d) {
+          if (d === false) {
+            removeLoadingScreen();
+            showCustomModal("Gagal", "Email atau Password salah!", "error");
+            return;
+          }
+
+          const barisMatch = d[1].match(/_(\d+)$/);
+          const barisParsed = barisMatch ? barisMatch[1] : d[1];
+          sessionStorage.setItem('baris', barisParsed);
+          
+          sessionStorage.setItem('checkInTime', d[6]);
+          sessionStorage.setItem('checkOutTime', d[7]);
+
+          sessionStorage.setItem('userid', d[2]);
+          sessionStorage.setItem('usrsnm',  d[3]);
+          sessionStorage.setItem('status',  d[5]);
+
+          const presensiHtml = d[0];
+
+          // Langsung render halaman presensi tanpa ambil outlet list
+          document.open();
+          document.write(presensiHtml);
+          document.close();
+
+        })
+        .withFailureHandler(function(error) {
+          removeLoadingScreen();
+          alert("Terjadi error saat login: " + error.message);
+        })
+        .presensiLoginData(objInput);
+    }
+
+    // <--- Fungsi Login untuk Tipe Riwayat --->
+    function riwayat() {
+
+      const input1 = document.getElementById('email');
+      const input2 = document.getElementById('password');
+      const objInput = {
+        input1: input1.value,
+        input2: input2.value
+      };
+
+      if (!input1.value || !input2.value) {
+        showCustomModal("Peringatan", "Isi semua kolom!", "warning");
+        return;
+      }
+
+      showLoadingScreen(); // << Tambahkan baris ini!
+      localStorage.setItem('savedEmail', input1.value);
+      localStorage.setItem('savedPassword', input2.value);
+
+      google.script.run.withSuccessHandler(function(d) {
+        if (d === false) {
+          removeLoadingScreen();
+          showCustomModal("Gagal", "Email atau Password salah!", "error", () => {});
+        } else {
+          // Simpan session/local data
+          sessionStorage.setItem('userid', d[1]);
+          localStorage.setItem('userid', d[1]);
+          sessionStorage.setItem('usrsnm', d[2]);
+          localStorage.setItem('usrsnm', d[2]);
+
+          // Langsung jalankan ke halaman berikutnya tanpa Swal
+          document.open();
+          document.write(d[0]);
+          document.close();
+        }
+      }).loginRiwayat(objInput);
+    }
+
+    // <--- Fungsi Login untuk Tipe Approval --->
+    function approval() {
+
+      const input1 = document.getElementById('email');
+      const input2 = document.getElementById('password');
+      const objInput = {
+        input1: input1.value,
+        input2: input2.value
+      };
+
+      if (!input1.value || !input2.value) {
+        showCustomModal("Peringatan", "Isi semua kolom!", "warning");
+        return;
+      }
+
+      showLoadingScreen(); // << Tambahkan baris ini!
+      localStorage.setItem('savedEmail', input1.value);
+      localStorage.setItem('savedPassword', input2.value);
+
+      google.script.run.withSuccessHandler(function(d) {
+        if (d === false) {
+          removeLoadingScreen();
+          showCustomModal("Gagal", "Email atau Password salah!", "error", () => {});
+        } else {
+          // Simpan session/local data
+          sessionStorage.setItem('userid', d[1]);
+          localStorage.setItem('userid', d[1]);
+          sessionStorage.setItem('usrsnm', d[2]);
+          localStorage.setItem('usrsnm', d[2]);
+
+          // Langsung jalankan ke halaman berikutnya tanpa Swal
+          document.open();
+          document.write(d[0]);
+          document.close();
+        }
+      }).loginApproval(objInput);
+    }
+
+    function showLoadingScreen() {
+      const main = document.querySelector('.profile-main');
+      if (!main) return;
+
+      // Cegah duplikasi overlay
+      if (document.getElementById('loading-overlay')) return;
+
+      const overlay = document.createElement('div');
+      overlay.id = 'loading-overlay';
+      overlay.style.position = 'absolute';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.background = '#ffa427';
+      overlay.style.zIndex = '1000';
+      overlay.style.display = 'flex';
+      overlay.style.justifyContent = 'center';
+      overlay.style.alignItems = 'center';
+
+      overlay.innerHTML = `
+        <img src="https://i.pinimg.com/originals/fb/29/00/fb2900de3695efa2c6e2d63bd35ac11e.gif"
+            alt="Loading..." style="max-width: 100%; max-height: 100%;" />
+      `;
+
+      main.style.position = 'relative'; // penting: agar absolute bekerja di dalamnya
+      main.appendChild(overlay);
+    }
+
+    function removeLoadingScreen() {
+      const overlay = document.getElementById('loading-overlay');
+      if (overlay) {
+        overlay.remove();
+      }
+    }
+
+    function showCustomModal(judul, pesan, tipe, callback) {
+      const icon = tipe === 'error' ? '❌' :
+                  tipe === 'warning' ? '⚠️' :
+                  tipe === 'success' ? '✅' : 'ℹ️';
+
+      // Cegah duplikasi modal
+      const existing = document.getElementById('custom-modal');
+      if (existing) existing.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'custom-modal';
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100vw';
+      modal.style.height = '100vh';
+      modal.style.background = 'rgba(0,0,0,0.5)';
+      modal.style.zIndex = '2000';
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+
+      modal.innerHTML = `
+        <div style="
+          background: white;
+          padding: 24px 32px;
+          border-radius: 10px;
+          max-width: 90%;
+          width: 320px;
+          text-align: center;
+          font-family: sans-serif;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        ">
+          <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
+          <h3 style="margin-bottom: 10px;">${judul}</h3>
+          <p style="font-size: 0.95rem; margin-bottom: 20px;">${pesan}</p>
+          <button onclick="document.getElementById('custom-modal').remove(); ${callback ? 'callback()' : ''}" style="
+            padding: 8px 16px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+          ">OK</button>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    function populateLoginFields() {
+      const savedEmail = localStorage.getItem('savedEmail');
+      const savedPassword = localStorage.getItem('savedPassword');
+      if (savedEmail) document.getElementById('email').value = savedEmail;
+      if (savedPassword) document.getElementById('password').value = savedPassword;
+    }
+
+    window.onload = populateLoginFields;
+    // Start animation
+    showValue();
+  </script>
+</body>
+</html>
