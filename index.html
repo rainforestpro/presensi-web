@@ -446,257 +446,159 @@
       });
     }
     //------------------------------------ Pembatas untuk Core Value ------------------------------------
+let loginType = ''; // Menyimpan tipe login yang dipilih
 
-    function flipCard(type) {
-      loginType = type;
-      document.getElementById("flipContainer").classList.add("flipped");
-      document.getElementById("loginTitle").innerText =
-        type === 'presensi' ? 'Login Presensi' :
-        type === 'riwayat' ? 'Login Riwayat' :
-        type === 'approval' ? 'Login Approval' : 'Login';
-      populateLoginFields();
+function flipCard(type) {
+  loginType = type;
+  document.getElementById("flipContainer").classList.add("flipped");
+  document.getElementById("loginTitle").innerText =
+    type === 'presensi' ? 'Login Presensi' :
+    type === 'riwayat' ? 'Login Riwayat' :
+    type === 'approval' ? 'Login Approval' : 'Login';
+  populateLoginFields();
+}
+
+function flipBack() {
+  document.getElementById("flipContainer").classList.remove("flipped");
+}
+
+function login() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  if (!email || !password) {
+    showCustomModal("Peringatan", "Isi semua kolom!", "warning");
+    return;
+  }
+
+  showLoadingScreen();
+  localStorage.setItem("savedEmail", email);
+  localStorage.setItem("savedPassword", password);
+
+  fetch('https://script.google.com/macros/s/AKfycbygz352X88DF7tZs-unWpqHilYJ7EIbkZ12dt5AfSttaSeLjkjfkgE5N5lyND582z8uLA/exec', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mode: loginType,
+      email: email,
+      password: password
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    removeLoadingScreen();
+    if (!data.success) {
+      showCustomModal("Gagal", "Email atau Password salah!", "error");
+      return;
     }
 
-    function flipBack() {
-      document.getElementById("flipContainer").classList.remove("flipped");
+    // Simpan session data
+    localStorage.setItem("userid", data.userid);
+    localStorage.setItem("usrsnm", data.usrsnm);
+
+    // Redirect ke halaman sesuai tipe login
+    if (loginType === 'presensi') {
+      window.location.href = 'presensi.html';
+    } else if (loginType === 'riwayat') {
+      window.location.href = 'riwayat.html';
+    } else if (loginType === 'approval') {
+      window.location.href = 'approval.html';
     }
+  })
+  .catch(err => {
+    removeLoadingScreen();
+    showCustomModal("Error", "Terjadi kesalahan jaringan.", "error");
+    console.error(err);
+  });
+}
+function showLoadingScreen() {
+  const main = document.querySelector('.profile-main');
+  if (!main) return;
 
-    function login() {
-      if (loginType === 'presensi') {
-        presensiLogin();
-      } else if (loginType === 'riwayat') {
-        riwayat();
-      } else if (loginType === 'approval') {
-        approval();
-      } else {
-        showCustomModal("Error", "Silakan pilih metode login terlebih dahulu.", "error");
-      }
-    }
+  if (document.getElementById('loading-overlay')) return;
 
-    // <--- Fungsi Login untuk Tipe Presensi --->
-    // Bagian JS yang dimodifikasi: hanya fungsi `presensiLogin()`
-    function presensiLogin() {
-      const emailEl = document.getElementById('email');
-      const passEl  = document.getElementById('password');
-      const objInput = {
-        input1: emailEl.value,
-        input2: passEl.value
-      };
+  const overlay = document.createElement('div');
+  overlay.id = 'loading-overlay';
+  overlay.style = `
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #ffa427;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  `;
+  overlay.innerHTML = `<img src="https://i.pinimg.com/originals/fb/29/00/fb2900de3695efa2c6e2d63bd35ac11e.gif" alt="Loading..." style="max-width: 100%; max-height: 100%;" />`;
+  main.style.position = 'relative';
+  main.appendChild(overlay);
+}
 
-      if (!objInput.input1 || !objInput.input2) {
-        showCustomModal("Peringatan", "Isi semua kolom!", "warning");
-        return;
-      }
+function removeLoadingScreen() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) overlay.remove();
+}
 
-      showLoadingScreen();
-      localStorage.setItem('savedEmail', objInput.input1);
-      localStorage.setItem('savedPassword', objInput.input2);
+function showCustomModal(judul, pesan, tipe, callback) {
+  const icon = tipe === 'error' ? '❌' :
+              tipe === 'warning' ? '⚠️' :
+              tipe === 'success' ? '✅' : 'ℹ️';
 
-      google.script.run
-        .withSuccessHandler(function(d) {
-          if (d === false) {
-            removeLoadingScreen();
-            showCustomModal("Gagal", "Email atau Password salah!", "error");
-            return;
-          }
+  const existing = document.getElementById('custom-modal');
+  if (existing) existing.remove();
 
-          const barisMatch = d[1].match(/_(\d+)$/);
-          const barisParsed = barisMatch ? barisMatch[1] : d[1];
-          sessionStorage.setItem('baris', barisParsed);
-          
-          sessionStorage.setItem('checkInTime', d[6]);
-          sessionStorage.setItem('checkOutTime', d[7]);
+  const modal = document.createElement('div');
+  modal.id = 'custom-modal';
+  modal.style = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  `;
 
-          sessionStorage.setItem('userid', d[2]);
-          sessionStorage.setItem('usrsnm',  d[3]);
-          sessionStorage.setItem('status',  d[5]);
+  modal.innerHTML = `
+    <div style="
+      background: white;
+      padding: 24px 32px;
+      border-radius: 10px;
+      max-width: 90%;
+      width: 320px;
+      text-align: center;
+      font-family: sans-serif;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    ">
+      <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
+      <h3 style="margin-bottom: 10px;">${judul}</h3>
+      <p style="font-size: 0.95rem; margin-bottom: 20px;">${pesan}</p>
+      <button onclick="document.getElementById('custom-modal').remove(); ${callback ? 'callback()' : ''}" style="
+        padding: 8px 16px;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      ">OK</button>
+    </div>
+  `;
 
-          const presensiHtml = d[0];
+  document.body.appendChild(modal);
+}
 
-          // Langsung render halaman presensi tanpa ambil outlet list
-          document.open();
-          document.write(presensiHtml);
-          document.close();
+function populateLoginFields() {
+  const savedEmail = localStorage.getItem('savedEmail');
+  const savedPassword = localStorage.getItem('savedPassword');
+  if (savedEmail) document.getElementById('email').value = savedEmail;
+  if (savedPassword) document.getElementById('password').value = savedPassword;
+}
 
-        })
-        .withFailureHandler(function(error) {
-          removeLoadingScreen();
-          alert("Terjadi error saat login: " + error.message);
-        })
-        .presensiLoginData(objInput);
-    }
+window.onload = populateLoginFields;
 
-    // <--- Fungsi Login untuk Tipe Riwayat --->
-    function riwayat() {
 
-      const input1 = document.getElementById('email');
-      const input2 = document.getElementById('password');
-      const objInput = {
-        input1: input1.value,
-        input2: input2.value
-      };
 
-      if (!input1.value || !input2.value) {
-        showCustomModal("Peringatan", "Isi semua kolom!", "warning");
-        return;
-      }
-
-      showLoadingScreen(); // << Tambahkan baris ini!
-      localStorage.setItem('savedEmail', input1.value);
-      localStorage.setItem('savedPassword', input2.value);
-
-      google.script.run.withSuccessHandler(function(d) {
-        if (d === false) {
-          removeLoadingScreen();
-          showCustomModal("Gagal", "Email atau Password salah!", "error", () => {});
-        } else {
-          // Simpan session/local data
-          sessionStorage.setItem('userid', d[1]);
-          localStorage.setItem('userid', d[1]);
-          sessionStorage.setItem('usrsnm', d[2]);
-          localStorage.setItem('usrsnm', d[2]);
-
-          // Langsung jalankan ke halaman berikutnya tanpa Swal
-          document.open();
-          document.write(d[0]);
-          document.close();
-        }
-      }).loginRiwayat(objInput);
-    }
-
-    // <--- Fungsi Login untuk Tipe Approval --->
-    function approval() {
-
-      const input1 = document.getElementById('email');
-      const input2 = document.getElementById('password');
-      const objInput = {
-        input1: input1.value,
-        input2: input2.value
-      };
-
-      if (!input1.value || !input2.value) {
-        showCustomModal("Peringatan", "Isi semua kolom!", "warning");
-        return;
-      }
-
-      showLoadingScreen(); // << Tambahkan baris ini!
-      localStorage.setItem('savedEmail', input1.value);
-      localStorage.setItem('savedPassword', input2.value);
-
-      google.script.run.withSuccessHandler(function(d) {
-        if (d === false) {
-          removeLoadingScreen();
-          showCustomModal("Gagal", "Email atau Password salah!", "error", () => {});
-        } else {
-          // Simpan session/local data
-          sessionStorage.setItem('userid', d[1]);
-          localStorage.setItem('userid', d[1]);
-          sessionStorage.setItem('usrsnm', d[2]);
-          localStorage.setItem('usrsnm', d[2]);
-
-          // Langsung jalankan ke halaman berikutnya tanpa Swal
-          document.open();
-          document.write(d[0]);
-          document.close();
-        }
-      }).loginApproval(objInput);
-    }
-
-    function showLoadingScreen() {
-      const main = document.querySelector('.profile-main');
-      if (!main) return;
-
-      // Cegah duplikasi overlay
-      if (document.getElementById('loading-overlay')) return;
-
-      const overlay = document.createElement('div');
-      overlay.id = 'loading-overlay';
-      overlay.style.position = 'absolute';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100%';
-      overlay.style.height = '100%';
-      overlay.style.background = '#ffa427';
-      overlay.style.zIndex = '1000';
-      overlay.style.display = 'flex';
-      overlay.style.justifyContent = 'center';
-      overlay.style.alignItems = 'center';
-
-      overlay.innerHTML = `
-        <img src="https://i.pinimg.com/originals/fb/29/00/fb2900de3695efa2c6e2d63bd35ac11e.gif"
-            alt="Loading..." style="max-width: 100%; max-height: 100%;" />
-      `;
-
-      main.style.position = 'relative'; // penting: agar absolute bekerja di dalamnya
-      main.appendChild(overlay);
-    }
-
-    function removeLoadingScreen() {
-      const overlay = document.getElementById('loading-overlay');
-      if (overlay) {
-        overlay.remove();
-      }
-    }
-
-    function showCustomModal(judul, pesan, tipe, callback) {
-      const icon = tipe === 'error' ? '❌' :
-                  tipe === 'warning' ? '⚠️' :
-                  tipe === 'success' ? '✅' : 'ℹ️';
-
-      // Cegah duplikasi modal
-      const existing = document.getElementById('custom-modal');
-      if (existing) existing.remove();
-
-      const modal = document.createElement('div');
-      modal.id = 'custom-modal';
-      modal.style.position = 'fixed';
-      modal.style.top = '0';
-      modal.style.left = '0';
-      modal.style.width = '100vw';
-      modal.style.height = '100vh';
-      modal.style.background = 'rgba(0,0,0,0.5)';
-      modal.style.zIndex = '2000';
-      modal.style.display = 'flex';
-      modal.style.justifyContent = 'center';
-      modal.style.alignItems = 'center';
-
-      modal.innerHTML = `
-        <div style="
-          background: white;
-          padding: 24px 32px;
-          border-radius: 10px;
-          max-width: 90%;
-          width: 320px;
-          text-align: center;
-          font-family: sans-serif;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        ">
-          <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
-          <h3 style="margin-bottom: 10px;">${judul}</h3>
-          <p style="font-size: 0.95rem; margin-bottom: 20px;">${pesan}</p>
-          <button onclick="document.getElementById('custom-modal').remove(); ${callback ? 'callback()' : ''}" style="
-            padding: 8px 16px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-          ">OK</button>
-        </div>
-      `;
-
-      document.body.appendChild(modal);
-    }
-
-    function populateLoginFields() {
-      const savedEmail = localStorage.getItem('savedEmail');
-      const savedPassword = localStorage.getItem('savedPassword');
-      if (savedEmail) document.getElementById('email').value = savedEmail;
-      if (savedPassword) document.getElementById('password').value = savedPassword;
-    }
-
-    window.onload = populateLoginFields;
-    // Start animation
     showValue();
   </script>
 </body>
