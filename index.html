@@ -367,232 +367,231 @@
     </div>
   </div>
 
-  <script>
-    let loginType = '';
+<script>
+  // ✅ Jangan duplikat loginType
+  let loginType = ''; // Digunakan untuk menyimpan mode login yang dipilih
 
-    const values = [
-      {
-        title: "Continuous Improvement",
-        desc: "We strive for excellence by constantly improving our processes and ourselves."
-      },
-      {
-        title: "Accountable",
-        desc: "We take ownership of our actions and deliver what we promise with integrity."
-      },
-      {
-        title: "Respect",
-        desc: "We treat everyone with dignity, fairness, and compassion."
-      },
-      {
-        title: "Effective & Efficient",
-        desc: "We deliver high-quality results while optimizing resources and time."
-      }
-    ];
-
-    const titleEl = document.getElementById("value-title");
-    const descEl = document.getElementById("value-desc");
-    let index = 0;
-
-    function typeWriter(text, callback) {
-      let i = 0;
-      titleEl.textContent = "";
-      function type() {
-        if (i < text.length) {
-          titleEl.textContent += text.charAt(i);
-          i++;
-          setTimeout(type, 50);
-        } else {
-          callback();
-        }
-      }
-      type();
+  // Data core values
+  const values = [
+    {
+      title: "Continuous Improvement",
+      desc: "We strive for excellence by constantly improving our processes and ourselves."
+    },
+    {
+      title: "Accountable",
+      desc: "We take ownership of our actions and deliver what we promise with integrity."
+    },
+    {
+      title: "Respect",
+      desc: "We treat everyone with dignity, fairness, and compassion."
+    },
+    {
+      title: "Effective & Efficient",
+      desc: "We deliver high-quality results while optimizing resources and time."
     }
+  ];
 
-    function highlightCARE(titleText) {
-      const firstLetter = titleText.charAt(0).toUpperCase();
-      const validLetters = ["C", "A", "R", "E"];
-      validLetters.forEach(letter => {
-        const el = document.getElementById(letter);
-        if (el) el.classList.remove("highlight");
-      });
-      if (validLetters.includes(firstLetter)) {
-        const el = document.getElementById(firstLetter);
-        if (el) el.classList.add("highlight");
+  const titleEl = document.getElementById("value-title");
+  const descEl = document.getElementById("value-desc");
+  let index = 0;
+
+  function typeWriter(text, callback) {
+    let i = 0;
+    titleEl.textContent = "";
+    function type() {
+      if (i < text.length) {
+        titleEl.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, 50);
+      } else {
+        callback();
       }
     }
-
-    function showValue() {
-      titleEl.classList.remove("fade-out");
-      descEl.classList.remove("fade-out", "fade-in");
-      descEl.style.opacity = 0;
-
-      const { title, desc } = values[index];
-      highlightCARE(title);
-
-      typeWriter(title, () => {
-        descEl.textContent = desc;
-        descEl.classList.add("fade-in");
-
-        setTimeout(() => {
-          titleEl.classList.add("fade-out");
-          descEl.classList.remove("fade-in");
-          descEl.classList.add("fade-out");
-
-          setTimeout(() => {
-            index = (index + 1) % values.length;
-            showValue();
-          }, 800);
-        }, 3000);
-      });
-    }
-    //------------------------------------ Pembatas untuk Core Value ------------------------------------
-let loginType = ''; // Menyimpan tipe login yang dipilih
-
-function flipCard(type) {
-  loginType = type;
-  document.getElementById("flipContainer").classList.add("flipped");
-  document.getElementById("loginTitle").innerText =
-    type === 'presensi' ? 'Login Presensi' :
-    type === 'riwayat' ? 'Login Riwayat' :
-    type === 'approval' ? 'Login Approval' : 'Login';
-  populateLoginFields();
-}
-
-function flipBack() {
-  document.getElementById("flipContainer").classList.remove("flipped");
-}
-
-function login() {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-
-  if (!email || !password) {
-    showCustomModal("Peringatan", "Isi semua kolom!", "warning");
-    return;
+    type();
   }
 
-  showLoadingScreen();
-  localStorage.setItem("savedEmail", email);
-  localStorage.setItem("savedPassword", password);
-
-  const url = `https://script.google.com/macros/s/AKfycbygz352X88DF7tZs-unWpqHilYJ7EIbkZ12dt5AfSttaSeLjkjfkgE5N5lyND582z8uLA/exec?mode=${loginType}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
-
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      removeLoadingScreen();
-      if (!data.success) {
-        showCustomModal("Gagal", "Email atau Password salah!", "error");
-        return;
-      }
-      localStorage.setItem("userid", data.userid);
-      localStorage.setItem("usrsnm", data.usrsnm);
-
-      if (loginType === 'presensi') {
-        window.location.href = 'presensi.html';
-      } else if (loginType === 'riwayat') {
-        window.location.href = 'riwayat.html';
-      } else if (loginType === 'approval') {
-        window.location.href = 'approval.html';
-      }
-    })
-    .catch(err => {
-      removeLoadingScreen();
-      showCustomModal("Error", "Terjadi kesalahan jaringan.", "error");
-      console.error(err);
+  function highlightCARE(titleText) {
+    const firstLetter = titleText.charAt(0).toUpperCase();
+    const validLetters = ["C", "A", "R", "E"];
+    validLetters.forEach(letter => {
+      const el = document.getElementById(letter);
+      if (el) el.classList.remove("highlight");
     });
-}
+    if (validLetters.includes(firstLetter)) {
+      const el = document.getElementById(firstLetter);
+      if (el) el.classList.add("highlight");
+    }
+  }
 
+  function showValue() {
+    titleEl.classList.remove("fade-out");
+    descEl.classList.remove("fade-out", "fade-in");
+    descEl.style.opacity = 0;
 
-function showLoadingScreen() {
-  const main = document.querySelector('.profile-main');
-  if (!main) return;
+    const { title, desc } = values[index];
+    highlightCARE(title);
 
-  if (document.getElementById('loading-overlay')) return;
+    typeWriter(title, () => {
+      descEl.textContent = desc;
+      descEl.classList.add("fade-in");
 
-  const overlay = document.createElement('div');
-  overlay.id = 'loading-overlay';
-  overlay.style = `
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: #ffa427;
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  `;
-  overlay.innerHTML = `<img src="https://i.pinimg.com/originals/fb/29/00/fb2900de3695efa2c6e2d63bd35ac11e.gif" alt="Loading..." style="max-width: 100%; max-height: 100%;" />`;
-  main.style.position = 'relative';
-  main.appendChild(overlay);
-}
+      setTimeout(() => {
+        titleEl.classList.add("fade-out");
+        descEl.classList.remove("fade-in");
+        descEl.classList.add("fade-out");
 
-function removeLoadingScreen() {
-  const overlay = document.getElementById('loading-overlay');
-  if (overlay) overlay.remove();
-}
+        setTimeout(() => {
+          index = (index + 1) % values.length;
+          showValue();
+        }, 800);
+      }, 3000);
+    });
+  }
 
-function showCustomModal(judul, pesan, tipe, callback) {
-  const icon = tipe === 'error' ? '❌' :
-              tipe === 'warning' ? '⚠️' :
-              tipe === 'success' ? '✅' : 'ℹ️';
+  function flipCard(type) {
+    loginType = type;
+    document.getElementById("flipContainer").classList.add("flipped");
+    document.getElementById("loginTitle").innerText =
+      type === 'presensi' ? 'Login Presensi' :
+      type === 'riwayat' ? 'Login Riwayat' :
+      type === 'approval' ? 'Login Approval' : 'Login';
+    populateLoginFields();
+  }
 
-  const existing = document.getElementById('custom-modal');
-  if (existing) existing.remove();
+  function flipBack() {
+    document.getElementById("flipContainer").classList.remove("flipped");
+  }
 
-  const modal = document.createElement('div');
-  modal.id = 'custom-modal';
-  modal.style = `
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.5);
-    z-index: 2000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  `;
+  function login() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
 
-  modal.innerHTML = `
-    <div style="
-      background: white;
-      padding: 24px 32px;
-      border-radius: 10px;
-      max-width: 90%;
-      width: 320px;
-      text-align: center;
-      font-family: sans-serif;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    ">
-      <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
-      <h3 style="margin-bottom: 10px;">${judul}</h3>
-      <p style="font-size: 0.95rem; margin-bottom: 20px;">${pesan}</p>
-      <button onclick="document.getElementById('custom-modal').remove(); ${callback ? 'callback()' : ''}" style="
-        padding: 8px 16px;
-        background-color: #4a90e2;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      ">OK</button>
-    </div>
-  `;
+    if (!email || !password) {
+      showCustomModal("Peringatan", "Isi semua kolom!", "warning");
+      return;
+    }
 
-  document.body.appendChild(modal);
-}
+    showLoadingScreen();
+    localStorage.setItem("savedEmail", email);
+    localStorage.setItem("savedPassword", password);
 
-function populateLoginFields() {
-  const savedEmail = localStorage.getItem('savedEmail');
-  const savedPassword = localStorage.getItem('savedPassword');
-  if (savedEmail) document.getElementById('email').value = savedEmail;
-  if (savedPassword) document.getElementById('password').value = savedPassword;
-}
+    const url = `https://script.google.com/macros/s/AKfycbygz352X88DF7tZs-unWpqHilYJ7EIbkZ12dt5AfSttaSeLjkjfkgE5N5lyND582z8uLA/exec?mode=${loginType}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
-window.onload = populateLoginFields;
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        removeLoadingScreen();
+        if (!data.success) {
+          showCustomModal("Gagal", "Email atau Password salah!", "error");
+          return;
+        }
+        localStorage.setItem("userid", data.userid);
+        localStorage.setItem("usrsnm", data.usrsnm);
 
+        if (loginType === 'presensi') {
+          window.location.href = 'presensi.html';
+        } else if (loginType === 'riwayat') {
+          window.location.href = 'riwayat.html';
+        } else if (loginType === 'approval') {
+          window.location.href = 'approval.html';
+        }
+      })
+      .catch(err => {
+        removeLoadingScreen();
+        showCustomModal("Error", "Terjadi kesalahan jaringan.", "error");
+        console.error(err);
+      });
+  }
 
+  function showLoadingScreen() {
+    const main = document.querySelector('.profile-main');
+    if (!main) return;
 
-    showValue();
-  </script>
+    if (document.getElementById('loading-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.style = `
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #ffa427;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    `;
+    overlay.innerHTML = `<img src="https://i.pinimg.com/originals/fb/29/00/fb2900de3695efa2c6e2d63bd35ac11e.gif" alt="Loading..." style="max-width: 100%; max-height: 100%;" />`;
+    main.style.position = 'relative';
+    main.appendChild(overlay);
+  }
+
+  function removeLoadingScreen() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.remove();
+  }
+
+  function showCustomModal(judul, pesan, tipe, callback) {
+    const icon = tipe === 'error' ? '❌' :
+                tipe === 'warning' ? '⚠️' :
+                tipe === 'success' ? '✅' : 'ℹ️';
+
+    const existing = document.getElementById('custom-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'custom-modal';
+    modal.style = `
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    `;
+
+    modal.innerHTML = `
+      <div style="
+        background: white;
+        padding: 24px 32px;
+        border-radius: 10px;
+        max-width: 90%;
+        width: 320px;
+        text-align: center;
+        font-family: sans-serif;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      ">
+        <div style="font-size: 2rem; margin-bottom: 12px;">${icon}</div>
+        <h3 style="margin-bottom: 10px;">${judul}</h3>
+        <p style="font-size: 0.95rem; margin-bottom: 20px;">${pesan}</p>
+        <button onclick="document.getElementById('custom-modal').remove(); ${callback ? 'callback()' : ''}" style="
+          padding: 8px 16px;
+          background-color: #4a90e2;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+        ">OK</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  function populateLoginFields() {
+    const savedEmail = localStorage.getItem('savedEmail');
+    const savedPassword = localStorage.getItem('savedPassword');
+    if (savedEmail) document.getElementById('email').value = savedEmail;
+    if (savedPassword) document.getElementById('password').value = savedPassword;
+  }
+
+  window.onload = () => {
+    populateLoginFields();
+    showValue(); // Penting agar animasi tetap berjalan
+  };
+</script>
+
 </body>
 </html>
