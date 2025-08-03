@@ -475,43 +475,34 @@ function login() {
   localStorage.setItem("savedEmail", email);
   localStorage.setItem("savedPassword", password);
 
-  const endpoint = 'https://script.google.com/macros/s/AKfycbygz352X88DF7tZs-unWpqHilYJ7EIbkZ12dt5AfSttaSeLjkjfkgE5N5lyND582z8uLA/exec';
-  const url = `${endpoint}?mode=${loginType}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+  const url = `https://script.google.com/macros/s/AKfycbygz352X88DF7tZs-unWpqHilYJ7EIbkZ12dt5AfSttaSeLjkjfkgE5N5lyND582z8uLA/exec?mode=${loginType}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
-  fetch(url, {
-    method: 'GET',
-    redirect: 'follow'
-  })
-  .then(response => {
-    if (!response.ok) throw new Error('Network response not OK');
-    return response.json();
-  })
-  .then(data => {
-    removeLoadingScreen();
-    if (!data.success) {
-      showCustomModal("Gagal", "Email atau Password salah!", "error");
-      return;
-    }
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      removeLoadingScreen();
+      if (!data.success) {
+        showCustomModal("Gagal", "Email atau Password salah!", "error");
+        return;
+      }
+      localStorage.setItem("userid", data.userid);
+      localStorage.setItem("usrsnm", data.usrsnm);
 
-    // Simpan session data
-    localStorage.setItem("userid", data.userid);
-    localStorage.setItem("usrsnm", data.usrsnm);
-
-    // Redirect ke halaman sesuai tipe login
-    if (loginType === 'presensi') {
-      window.location.href = 'presensi.html';
-    } else if (loginType === 'riwayat') {
-      window.location.href = 'riwayat.html';
-    } else if (loginType === 'approval') {
-      window.location.href = 'approval.html';
-    }
-  })
-  .catch(err => {
-    removeLoadingScreen();
-    showCustomModal("Error", "Terjadi kesalahan jaringan.", "error");
-    console.error(err);
-  });
+      if (loginType === 'presensi') {
+        window.location.href = 'presensi.html';
+      } else if (loginType === 'riwayat') {
+        window.location.href = 'riwayat.html';
+      } else if (loginType === 'approval') {
+        window.location.href = 'approval.html';
+      }
+    })
+    .catch(err => {
+      removeLoadingScreen();
+      showCustomModal("Error", "Terjadi kesalahan jaringan.", "error");
+      console.error(err);
+    });
 }
+
 
 function showLoadingScreen() {
   const main = document.querySelector('.profile-main');
