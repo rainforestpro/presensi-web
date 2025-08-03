@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <!-- Bootstrap & Icon Styles -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- Custom Style -->
+  <style>
+    /* === LAYOUT & STRUKTUR === */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('https://i.pinimg.com/736x/4d/cf/92/4dcf9299237282f293771efc5e823a4f.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .frame {
+      max-width: 480px;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 15px;
+      background-color: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    #youtubeAudio {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .fixed-top {
+      position: absolute;
+      top: 10px;
+      display: flex;
+      gap: 5px;
+    }
+
+    .fixed-top.right {
+      right: 10px;
+      justify-content: flex-end;
+    }
+
+    /* === TAMPILAN UMUM === */
+    h5.mt-5 {
+      margin-top: 40px;
+    }
+
+    .bold {
+      font-weight: bold;
+      color: #444;
+    }
+
+    .status-text {
+      font-size: 1rem;
+      color: #555;
+      text-align: center;
+    }
+
+    .spinner-border {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    /* === TOMBOL === */
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .btn-info, .btn-danger, .btn-soft {
+      color: white;
+    }
+
+    .btn-soft {
+      background-color: #d1e7fd;
+      color: #0056b3;
+      border-color: #d1e7fd;
+    }
+
+    .btn-info:hover, 
+    .btn-danger:hover, 
+    .btn-soft:hover {
+      background-color: gold;
+      color: white;
+      border-color: gold;
+    }
+
+    /* === INPUT FIELD === */
+    .inp {
+      border: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+      padding: 5px 10px;
+    }
+
+    .inp:focus {
+      border-bottom: 1px solid #007bff;
+      outline: none;
+    }
+
+    /* === MODAL === */
+    .modal-dialog {
+      max-width: 500px;
+      max-height: 90vh;
+      margin: 30px auto;
+    }
+
+    .header-bg {
+      background-color: #7cff7c;
+      color: #333;
+    }
+
+    /* === TABEL === */
+    table {
+      width: 100%;
+      max-width: 500px;
+      margin: 5px auto 20px;
+      border-collapse: separate;
+      border-spacing: 0;
+      background-color: #fff;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      table-layout: auto;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f4f6f8;
+      font-weight: bold;
+      color: #333;
+    }
+
+    td {
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    td:last-child, th:last-child {
+      text-align: center;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* === STATUS WARNA === */
+    .status-checkin {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-checkout {
+      color: red;
+      font-weight: bold;
+    }
+
+    /* === EFEK & ANIMASI === */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .blinking {
+      animation: blink 1s infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🔊 Audio Background (tersembunyi) -->
+  <iframe id="youtubeAudio"
+          src="https://www.youtube.com/embed/lVLh716-SCI?autoplay=1&loop=1&playlist=lVLh716-SCI&controls=0&mute=0"
+          frameborder="0"
+          allow="autoplay"
+          allowfullscreen>
+  </iframe>
+
+
+  <!-- 🔄 LOADING OVERLAY -->
+  <div id="loadingOverlay" style="
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  ">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3 fw-bold text-secondary">Memuat data presensi...</p>
+  </div>
+
+
+
+  <!-- 🧾 FRAME PRESENSI -->
+  <div class="container mt-5">
+    <div class="frame">
+      
+      <!-- 🔘 Tombol Kontrol Kanan Atas -->
+      <div class="fixed-top right">
+        <button type="button" class="btn btn-soft" onclick="openModal()">
+          <i class="bi bi-file-earmark-text"></i>
+        </button>
+        <button class="btn btn-info" type="button" id="refresh">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+        <div id="refreshSpinner" class="spinner-border text-primary d-none" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <button type="button" class="btn btn-danger" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- 📝 Heading & Status -->
+      <h5 class="mt-5 text-center">PRESENSI</h5>
+      <h5 class="mb-4 text-center">
+        <span><i>Halo,</i></span>
+        <span id="usrsnm"></span>
+      </h5>
+      <p id="infoPresensi" class="status-text text-center mb-3"></p>
+
+      <!-- 📍 Lokasi Tugas -->
+      <div class="col-md-12 border p-3 rounded" style="box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);">
+        <label class="text-center d-block"><b>LOKASI TUGAS</b></label>
+        <input type="text" class="form-control" id="Outlet" name="outlet" readonly>
+      </div>
+
+      <!-- 🎯 Tombol Scan QR -->
+      <div class="form-group mt-4 mb-4 text-center">
+        <button id="qrCodeBtn" type="button" class="btn btn-info d-none" onclick="openQRModal()">
+          <span id="qrBtnText">
+            <i class="bi bi-qr-code-scan"></i> Scan QR
+          </span>
+          <span id="qrBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+
+    </div> <!-- /.frame -->
+  </div> <!-- /.container -->
+
+  <!-- 🧾 MODAL: Informasi Presensi -->
+  <div class="modal fade" id="InfoModal" tabindex="-1" aria-labelledby="InfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header header-bg">
+          <h5 class="modal-title text-center w-100" id="InfoModalLabel">Informasi Presensi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body d-flex flex-column justify-content-center align-items-center">
+          <table>
+            <thead>
+              <tr>
+                <th>Keterangan</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="bold">Jadwal Shift</td><td id="jadwal"></td></tr>
+              <tr><td class="bold">Check In</td><td id="checkInTime"></td></tr>
+              <tr><td class="bold">Check Out</td><td id="checkOutTime"></td></tr>
+              <tr><td class="bold">Status Presensi</td><td id="statushadir"></td></tr>
+              <tr><td class="bold">Total Telat</td><td id="totalTelat"></td></tr>
+              <tr><td class="bold">Mangkir/Tidak Absen</td><td id="mangkir"></td></tr>
+              <tr><td class="bold">INFORMASI</td><td id="informasi"></td></tr>
+            </tbody>
+          </table>
+
+          <button class="btn btn-warning blinking mb-3" onclick="dataPresensi()">Jadwal dan Riwayat Presensi</button>
+
+          <!-- Status Tambahan -->
+          <p id="Status"></p>
+          <p id="baris"></p>
+          <p id="code"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📷 MODAL: QR Code Scanner -->
+  <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content p-3">
+        <div class="modal-header">
+          <h5 class="modal-title">Scan QR Code</h5>
+        </div>
+        <div class="modal-body text-center">
+          <div id="qr-reader" style="width: 100%;"></div>
+          <div id="rescanBtn" class="w-100 mt-2 d-none text-center">
+            <div class="spinner-border text-warning" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-1 text-warning fw-bold">Identifikasi Lokasi...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/gh/javabitpro/scanner/javabitpro-jp79-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js" integrity="sha384-SR1sx49pcuLnqZUnnPwx6FCym0wLsk5JZuNx2bPPENzswTNFaQU1RDvt3wT4gWFG" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js" integrity="sha384-j0CNLUeiqtyaRmlzUHCPZ+Gy5fQu0dQ6eZ/xAww941Ai1SxSY+0EQqNXNE6DZiVc" crossorigin="anonymous"></script>
+
+<script>
+
+/**
+ * ============================
+ *  FUNGSI INISIALISASI HALAMAN
+ * ============================
+ */
+window.onload = () => {
+  getData();
+  document.getElementById('refresh').click();
+  tampilkanInfoPresensi();
+  cekDanTampilkanQRCodeBtn();
+};
+
+
+/**
+ * ============================
+ *  TOMBOL DAN INTERAKSI UTAMA
+ * ============================
+ */
+function openModal() {
+  new bootstrap.Modal(document.getElementById('InfoModal')).show();
+}
+
+function logout() {
+  sessionStorage.removeItem('us');
+  google.script.run.withSuccessHandler((html) => {
+    document.open();
+    document.write(html);
+    document.close();
+  }).include("login");
+}
+
+function dataPresensi() {
+  google.script.run.withSuccessHandler((html) => {
+    document.open();
+    document.write(html);
+    document.close();
+  }).include("riwayat");
+}
+
+
+/**
+ * =====================
+ *  QR CODE MODAL & SCAN
+ * =====================
+ */
+function openQRModal() {
+  const modal = new bootstrap.Modal(document.getElementById('qrModal'), {
+    backdrop: 'static',
+    keyboard: false
+  });
+  modal.show();
+  startQRScanner();
+}
+
+function startQRScanner() {
+  const qrContainer = document.getElementById("qr-reader");
+  const rescanBtn = document.getElementById("rescanBtn");
+  qrContainer.innerHTML = "";
+
+  const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+  scanner.render((decodedText) => {
+    scanner.clear();
+    getOutletDataFromQR(decodedText);
+    rescanBtn.classList.remove("d-none");
+  });
+
+  rescanBtn.addEventListener("click", () => {
+    scanner.clear();
+    rescanBtn.classList.add("d-none");
+    startQRScanner();
+  });
+}
+
+function getOutletDataFromQR(qrCode) {
+  const rescanBtn = document.getElementById("rescanBtn");
+  const modalInstance = bootstrap.Modal.getInstance(document.getElementById('qrModal'));
+
+  rescanBtn.classList.remove("d-none");
+  setQRButtonLoading(true);
+
+  google.script.run.withSuccessHandler((response) => {
+    if (response && response.success) {
+      document.getElementById("Outlet").value = response.outletName;
+      rescanBtn.classList.add("d-none");
+      modalInstance?.hide();
+
+      const status = sessionStorage.getItem('status') || "HADIR";
+      const barisData = sessionStorage.getItem("baris");
+
+      if (!barisData || isNaN(barisData) || barisData === "0") {
+        setQRButtonLoading(false);
+        return Swal.fire({ icon: 'warning', title: 'Gagal Menyimpan', text: 'Baris target tidak ditemukan. Klik Refresh.', confirmButtonColor: '#d33' });
+      }
+
+      const objData = {
+        input1: response.outletName,
+        barisData,
+        attendanceBtn: status,
+        statushadir: sessionStorage.getItem("statushadir") || "",
+        emoticon: "😊",
+        code: sessionStorage.getItem("code") || ""
+      };
+
+      google.script.run.withSuccessHandler((resp) => {
+        setQRButtonLoading(false);
+        if (resp[0] === true) {
+          Swal.fire({ icon: 'success', title: 'Presensi berhasil', text: `${status} disimpan.`, timer: 2000, showConfirmButton: false })
+            .then(() => document.getElementById("refresh").click());
+        } else {
+          Swal.fire({ icon: 'error', title: 'Gagal Presensi', text: resp[1] });
+        }
+      }).processData(objData);
+
+    } else {
+      setQRButtonLoading(false);
+      rescanBtn.classList.add("d-none");
+      modalInstance?.hide();
+
+      Swal.fire({ icon: 'error', title: 'QR Code tidak valid', text: 'Data tidak ditemukan.', confirmButtonColor: '#d33' });
+    }
+  }).searchOutlet(qrCode);
+}
+
+function setQRButtonLoading(isLoading) {
+  const btn = document.getElementById("qrCodeBtn");
+  const text = document.getElementById("qrBtnText");
+  const spinner = document.getElementById("qrBtnSpinner");
+
+  btn.disabled = isLoading;
+  text.classList.toggle("d-none", isLoading);
+  spinner.classList.toggle("d-none", !isLoading);
+}
+
+function cekDanTampilkanQRCodeBtn() {
+  const status = (sessionStorage.getItem('status') || '').toLowerCase();
+  const qrCodeBtn = document.getElementById("qrCodeBtn");
+  qrCodeBtn.classList.toggle("d-none", !(status === 'check in' || status === 'check out'));
+}
+
+
+/**
+ * ==========================
+ *  DATA & STATUS PRESENSI
+ * ==========================
+ */
+function getData() {
+  const baris = sessionStorage.getItem('baris');
+  const usrsnm = sessionStorage.getItem('usrsnm');
+  const status = sessionStorage.getItem('status');
+
+  document.getElementById("baris").innerText = baris;
+  document.getElementById("usrsnm").innerText = usrsnm;
+  document.getElementById("Status").innerText = status;
+
+  // Sembunyikan overlay setelah data ditampilkan
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.style.display = "none";
+}
+
+function tampilkanInfoPresensi() {
+  const status = (sessionStorage.getItem('status') || '').toLowerCase();
+  const infoElement = document.getElementById("infoPresensi");
+  let message = "-";
+  infoElement.classList.remove("status-checkin", "status-checkout");
+
+  if (status === "check in") {
+    message = "Anda Belum Check In hari ini";
+    infoElement.classList.add("status-checkin");
+  } else if (status === "check out") {
+    message = "Anda Belum Check Out";
+    infoElement.classList.add("status-checkout");
+  } else {
+    message = sessionStorage.getItem('status') || '-';
+  }
+
+  infoElement.textContent = message;
+}
+
+
+/**
+ * ============================
+ *  REFRESH DATA USER (AJAX)
+ * ============================
+ */
+document.getElementById("refresh").addEventListener("click", () => {
+  const searchInput = sessionStorage.getItem('userid');
+  const spinner = document.getElementById("refreshSpinner");
+  const qrCodeBtn = document.getElementById("qrCodeBtn");
+
+  spinner.classList.remove("d-none");
+  qrCodeBtn.classList.add("d-none");
+
+  google.script.run.withSuccessHandler((data) => {
+    spinner.classList.add("d-none");
+
+    if (data && Array.isArray(data) && data.length >= 13) {
+      const [userid, usrsnm, , status, jadwal, checkIn, checkOut, statusHadir, code, barisRaw, informasi, totalTelat, mangkir] = data;
+      const baris = barisRaw.split("_")[1] || barisRaw;
+
+      sessionStorage.setItem('userid', userid);
+      sessionStorage.setItem('usrsnm', usrsnm);
+      sessionStorage.setItem('status', status);
+      sessionStorage.setItem('jadwal', jadwal);
+      sessionStorage.setItem('checkInTime', checkIn);
+      sessionStorage.setItem('checkOutTime', checkOut);
+      sessionStorage.setItem('code', code);
+      sessionStorage.setItem('baris', baris);
+      sessionStorage.setItem('statushadir', statusHadir);
+      sessionStorage.setItem('informasi', informasi);
+      sessionStorage.setItem('totalTelat', totalTelat);
+      sessionStorage.setItem('mangkir', mangkir);
+
+      // Update ke DOM
+      document.getElementById("usrsnm").textContent = usrsnm;
+      document.getElementById("Status").textContent = status;
+      document.getElementById("jadwal").textContent = jadwal;
+      document.getElementById("checkInTime").textContent = checkIn;
+      document.getElementById("checkOutTime").textContent = checkOut;
+      document.getElementById("statushadir").textContent = statusHadir;
+      document.getElementById("baris").textContent = baris;
+      document.getElementById("code").textContent = code;
+      document.getElementById("informasi").textContent = informasi;
+      document.getElementById("totalTelat").textContent = totalTelat;
+      document.getElementById("mangkir").textContent = mangkir;
+
+      getData();
+      tampilkanInfoPresensi();
+      cekDanTampilkanQRCodeBtn();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Data tidak ditemukan',
+        text: 'Silakan login ulang atau hubungi admin.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#d33'
+      });
+    }
+  }).searchUserInDatabase(searchInput);
+});
+
+
+/**
+ * ============================
+ *  WARNA INFORMASI TELAT
+ * ============================
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const totalTelatElement = document.getElementById("totalTelat");
+  const informasiData = document.getElementById("informasi");
+  let informasiTitle = null;
+
+  document.querySelectorAll("td.bold").forEach(td => {
+    if (td.textContent.trim().toUpperCase() === "INFORMASI") informasiTitle = td;
+  });
+
+  if (totalTelatElement && informasiTitle && informasiData) {
+    const observer = new MutationObserver(() => {
+      const total = parseInt(totalTelatElement.textContent.replace(/\D/g, ""), 10) || 0;
+      let bgColor = "", textColor = "", title = "INFORMASI";
+
+      if (total === 2) {
+        title = "PENGINGAT";
+        bgColor = "yellow";
+        textColor = "black";
+      } else if (total === 3) {
+        title = "PERINGATAN";
+        bgColor = "red";
+        textColor = "white";
+      } else if (total > 3) {
+        title = "PINALTI";
+        bgColor = "black";
+        textColor = "white";
+      }
+
+      informasiTitle.textContent = title;
+      informasiTitle.style.backgroundColor = bgColor;
+      informasiTitle.style.color = textColor;
+
+      informasiData.style.backgroundColor = bgColor;
+      informasiData.style.color = textColor;
+    });
+
+    observer.observe(totalTelatElement, { childList: true, subtree: true });
+  }
+});
+
+</script>
+</html>
