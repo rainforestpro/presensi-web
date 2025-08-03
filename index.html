@@ -475,16 +475,17 @@ function login() {
   localStorage.setItem("savedEmail", email);
   localStorage.setItem("savedPassword", password);
 
-  fetch('https://script.google.com/macros/s/AKfycbygz352X88DF7tZs-unWpqHilYJ7EIbkZ12dt5AfSttaSeLjkjfkgE5N5lyND582z8uLA/exec', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      mode: loginType,
-      email: email,
-      password: password
-    })
+  const endpoint = 'https://script.google.com/macros/s/AKfycbygz352X88DF7tZs-unWpqHilYJ7EIbkZ12dt5AfSttaSeLjkjfkgE5N5lyND582z8uLA/exec';
+  const url = `${endpoint}?mode=${loginType}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+
+  fetch(url, {
+    method: 'GET',
+    redirect: 'follow'
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) throw new Error('Network response not OK');
+    return response.json();
+  })
   .then(data => {
     removeLoadingScreen();
     if (!data.success) {
@@ -511,6 +512,7 @@ function login() {
     console.error(err);
   });
 }
+
 function showLoadingScreen() {
   const main = document.querySelector('.profile-main');
   if (!main) return;
